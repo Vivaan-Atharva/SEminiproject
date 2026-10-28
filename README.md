@@ -15,6 +15,8 @@ An issue management application: create change requests, assign them to engineer
 
 ## Documents
 
-- [Software Requirements Specification (SRS)](docs/CMS_SRS.docx)
-- [Software Architecture and Design Specification (SAD)](docs/CMS_SAD.docx)
-- [Software Test Plan (STP)](docs/CMS_Test_Plan.docx)
+| Document | PDF | Word |
+|---|---|---|
+| Software Requirements Specification (SRS) | [PDF](docs/CMS_SRS.pdf) | [DOCX](docs/CMS_SRS.docx) |
+| Software Architecture and Design Specification (SAD) | [PDF](docs/CMS_SAD.pdf) | [DOCX](docs/CMS_SAD.docx) |
+| Software Test Plan (STP) | [PDF](docs/CMS_Test_Plan.pdf) | [DOCX](docs/CMS_Test_Plan.docx) |
