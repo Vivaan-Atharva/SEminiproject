@@ -6,7 +6,7 @@ All demo accounts use the password DEMO_PASSWORD. They are for local
 development only and must never be used in a real deployment.
 """
 
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 
 from cms.constants import CRType, Priority, Role, Status
 from cms.extensions import db
@@ -50,6 +50,18 @@ DEMO_CHANGE_REQUESTS = [
 ]
 
 
+# Due dates relative to today, by demo CR number, so the dashboard has overdue
+# items to show. CMS-13 will set due dates for new requests automatically.
+DEMO_DUE_IN_DAYS = {
+    1: 3,    # Submitted, due in 3 days
+    3: 2,    # Approved, due in 2 days
+    5: -1,   # Approved, overdue by 1 day
+    6: -2,   # Assigned, overdue by 2 days
+    7: 1,    # In Progress, due tomorrow
+    8: -3,   # Resolved, past due date but not overdue (already resolved)
+}
+
+
 def seed_demo_data() -> dict:
     """Insert demo users and change requests. Safe to run more than once."""
     users_added = 0
@@ -78,6 +90,8 @@ def seed_demo_data() -> dict:
                 requester=users[req],
                 assignee=users[eng] if eng else None,
             )
+            if index in DEMO_DUE_IN_DAYS:
+                cr.due_date = date.today() + timedelta(days=DEMO_DUE_IN_DAYS[index])
             if status == Status.RESOLVED:
                 cr.resolution_summary = "Fixed and verified on the test environment."
             if status == Status.CLOSED:

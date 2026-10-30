@@ -1,7 +1,17 @@
-/* Project-wide styles. Bootstrap handles most layout. */
+/* Project-wide styles. Bootstrap handles most layout.
+   Badges always show their text, so status and priority never rely on colour alone. */
 
 .status-badge {
   background-color: #e7eef8;
   color: #1f4e79;
   font-weight: 500;
 }
+
+.priority-badge {
+  font-weight: 500;
+  border: 1px solid transparent;
+}
+.priority-critical { background-color: #fde2e1; color: #8a1c14; border-color: #f5b5b0; }
+.priority-high     { background-color: #fff0d9; color: #7a4a00; border-color: #f3d19c; }
+.priority-medium   { background-color: #eef1f4; color: #39424e; border-color: #d5dbe2; }
+.priority-low      { background-color: #f4f6f8; color: #5b6570; border-color: #e1e5ea; }

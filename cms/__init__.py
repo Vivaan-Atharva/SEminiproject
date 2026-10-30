@@ -7,6 +7,7 @@ from flask import Flask, render_template
 from cms.config import Config
 from cms.extensions import db, login_manager
 from cms.security import init_csrf
+from cms.template_helpers import init_template_helpers
 
 
 def create_app(config_object=Config):
@@ -22,6 +23,7 @@ def create_app(config_object=Config):
     db.init_app(app)
     login_manager.init_app(app)
     init_csrf(app)
+    init_template_helpers(app)
 
     from cms import models  # noqa: F401  (registers the tables)
     from cms.routes.auth import bp as auth_bp
