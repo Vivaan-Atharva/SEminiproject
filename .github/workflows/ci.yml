@@ -18,10 +18,10 @@ jobs:
 
     steps:
       - name: Check out the code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
           cache: pip
@@ -32,4 +32,14 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run tests
-        run: python -m pytest
+        shell: bash
+        run: |
+          set -o pipefail
+          python -m pytest -rfE --tb=short 2>&1 | tee pytest-output.txt
+
+      - name: List failed tests on the pull request
+        if: failure()
+        shell: bash
+        run: |
+          # Each failed test becomes an annotation on the PR's "Files changed" / Checks tab.
+          grep -E "^(FAILED|ERROR) " pytest-output.txt | sed 's/^/::error title=Test failed::/' || true

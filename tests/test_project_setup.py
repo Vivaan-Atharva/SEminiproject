@@ -29,7 +29,7 @@ def test_home_page_loads_with_no_change_requests(app, client, login):
     login("only@cms.local", "secret123")
     response = client.get("/")
     assert response.status_code == 200
-    assert b"Change Management Software" in response.data
+    assert b"Dashboard" in response.data
     assert b"flask --app cms seed" in response.data
 
 
