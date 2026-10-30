@@ -3,6 +3,7 @@ import pytest
 from cms import create_app
 from cms.config import TestConfig
 from cms.extensions import db
+from cms.seed import DEMO_PASSWORD
 
 
 @pytest.fixture
@@ -28,3 +29,21 @@ def seeded(app):
 
     seed_demo_data()
     return app
+
+
+@pytest.fixture
+def login(client):
+    """Sign in through the real login form, e.g. login("reviewer@cms.local")."""
+
+    def _login(email, password=DEMO_PASSWORD, **kwargs):
+        return client.post("/login", data={"email": email, "password": password}, **kwargs)
+
+    return _login
+
+
+@pytest.fixture
+def logout(client):
+    def _logout():
+        return client.post("/logout")
+
+    return _logout

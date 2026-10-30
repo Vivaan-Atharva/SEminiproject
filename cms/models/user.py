@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 
+from flask_login import UserMixin
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from cms.constants import Role
@@ -10,8 +11,8 @@ def _now():
     return datetime.now(timezone.utc)
 
 
-class User(db.Model):
-    """A person who uses the system. Login itself is added in CMS-2."""
+class User(UserMixin, db.Model):
+    """A person who uses the system. UserMixin adds what Flask-Login needs."""
 
     __tablename__ = "users"
 
@@ -37,8 +38,17 @@ class User(db.Model):
     def check_password(self, password: str) -> bool:
         return check_password_hash(self.password_hash, password)
 
+    @property
+    def is_active(self) -> bool:
+        """Flask-Login refuses to sign in users for whom this is False."""
+        return bool(self.active)
+
     def has_role(self, *roles: str) -> bool:
         return self.role in roles
+
+    @property
+    def is_admin(self) -> bool:
+        return self.role == Role.ADMIN
 
     def __repr__(self) -> str:
         return f"<User {self.email} ({self.role})>"

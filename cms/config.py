@@ -13,8 +13,18 @@ class Config:
     SQLALCHEMY_DATABASE_URI = os.environ.get("CMS_DATABASE_URL")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+    # Security (CMS-2)
+    CSRF_ENABLED = True
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = "Lax"
+    REMEMBER_COOKIE_HTTPONLY = True
+    # Show the demo account hint on the login page (turn off outside development).
+    SHOW_DEMO_LOGINS = os.environ.get("CMS_SHOW_DEMO_LOGINS", "1") == "1"
+
 
 class TestConfig(Config):
     TESTING = True
     SECRET_KEY = "test-secret"
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
+    # Tests post forms directly; one test switches this back on to check CSRF.
+    CSRF_ENABLED = False

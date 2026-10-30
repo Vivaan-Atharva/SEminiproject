@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Sign in - CMS{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6 col-lg-4">
+    <h1 class="h4 mb-3">Sign in</h1>
+    <form method="post" action="{{ url_for('auth.login', next=request.args.get('next')) }}" novalidate>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input type="email" class="form-control" id="email" name="email" value="{{ email }}"
+               autocomplete="username" required autofocus>
+      </div>
+      <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <input type="password" class="form-control" id="password" name="password"
+               autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Sign in</button>
+    </form>
+
+    {% if config.SHOW_DEMO_LOGINS %}
+      <div class="card mt-4">
+        <div class="card-body small">
+          <div class="fw-semibold mb-1">Demo accounts (password <code>demo1234</code>)</div>
+          admin@cms.local, reviewer@cms.local, engineer1@cms.local, requester@cms.local
+          <div class="text-muted mt-1">Load them with <code>flask --app cms seed</code>.</div>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -145,6 +145,46 @@ SEminiproject/
 
 Keep the layers separate: **routes** handle the web request, **services** hold the rules, **models** hold the data. Put each rule in a service so it can be unit-tested without a browser.
 
+## Login, roles and forms (from CMS-2)
+
+**Protect a page by role** with `roles_required`. Signed-out users are sent to the login page, a wrong role gets the 403 page, and Admin passes every role check:
+
+```python
+from flask_login import current_user, login_required
+from cms.constants import Role
+from cms.decorators import roles_required
+
+@bp.route("/change-requests/<int:cr_id>/approve", methods=["POST"])
+@roles_required(Role.REVIEWER)
+def approve(cr_id):
+    ...
+
+@bp.route("/change-requests")
+@login_required              # any signed-in user
+def list_change_requests():
+    ...
+```
+
+The decorator only checks the **role**. Checks such as "only the assignee may resolve" or "only the requester may close" go in your service, using `current_user`.
+
+**Every `method="post"` form needs the CSRF field**, or the request is rejected with 400:
+
+```html
+<form method="post" action="...">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  ...
+</form>
+```
+
+**In tests**, sign in with the `login` fixture (CSRF is switched off in tests):
+
+```python
+def test_reviewer_can_approve(seeded, client, login):
+    login("reviewer@cms.local")
+    response = client.post("/change-requests/1/approve")
+    ...
+```
+
 ## Team workflow
 
 1. **Pick your Jira story** on the CMS board and move it to **In Progress**.

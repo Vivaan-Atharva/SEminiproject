@@ -5,7 +5,8 @@ from pathlib import Path
 from flask import Flask, render_template
 
 from cms.config import Config
-from cms.extensions import db
+from cms.extensions import db, login_manager
+from cms.security import init_csrf
 
 
 def create_app(config_object=Config):
@@ -19,15 +20,23 @@ def create_app(config_object=Config):
         app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path.as_posix()}"
 
     db.init_app(app)
+    login_manager.init_app(app)
+    init_csrf(app)
 
     from cms import models  # noqa: F401  (registers the tables)
+    from cms.routes.auth import bp as auth_bp
     from cms.routes.main import bp as main_bp
 
     app.register_blueprint(main_bp)
+    app.register_blueprint(auth_bp)
 
     from cms.cli import register_cli
 
     register_cli(app)
+
+    @app.errorhandler(400)
+    def bad_request(_error):
+        return render_template("errors/400.html"), 400
 
     @app.errorhandler(403)
     def forbidden(_error):
