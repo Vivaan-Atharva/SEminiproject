@@ -1,0 +1,32 @@
+{# Reusable table of change requests. Usage: {% with items=..., empty="...", test_id="..." %}{% include "_cr_table.html" %}{% endwith %} #}
+{% if items %}
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0" data-test="{{ test_id }}">
+      <thead>
+        <tr>
+          <th scope="col">CR</th>
+          <th scope="col">Title</th>
+          <th scope="col">Priority</th>
+          <th scope="col">Status</th>
+          {% if show_due %}<th scope="col">Due</th>{% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for cr in items %}
+          {% set link = cr_url(cr) %}
+          <tr>
+            <td class="text-nowrap">
+              {% if link %}<a href="{{ link }}">{{ cr.cr_number }}</a>{% else %}{{ cr.cr_number }}{% endif %}
+            </td>
+            <td>{{ cr.title }}</td>
+            <td><span class="badge priority-badge priority-{{ cr.priority | lower }}">{{ cr.priority }}</span></td>
+            <td><span class="badge status-badge">{{ cr.status }}</span></td>
+            {% if show_due %}<td class="text-nowrap">{{ cr.due_date.strftime('%d %b %Y') if cr.due_date else '-' }}</td>{% endif %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <p class="text-muted small mb-0" data-test="{{ test_id }}-empty">{{ empty }}</p>
+{% endif %}

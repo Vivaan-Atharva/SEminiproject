@@ -1,8 +1,7 @@
 from flask import Blueprint, jsonify, render_template
-from flask_login import login_required
+from flask_login import current_user, login_required
 
-from cms.constants import Status
-from cms.models import ChangeRequest, User
+from cms.services.dashboard_service import build_dashboard
 
 bp = Blueprint("main", __name__)
 
@@ -10,13 +9,8 @@ bp = Blueprint("main", __name__)
 @bp.route("/")
 @login_required
 def index():
-    counts = {status: ChangeRequest.query.filter_by(status=status).count() for status in Status.ALL}
-    return render_template(
-        "index.html",
-        user_count=User.query.count(),
-        cr_count=ChangeRequest.query.count(),
-        counts=counts,
-    )
+    """Home dashboard (CMS-12)."""
+    return render_template("dashboard.html", dash=build_dashboard(current_user))
 
 
 @bp.route("/health")

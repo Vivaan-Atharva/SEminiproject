@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - CMS{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-baseline mb-3">
+  <h1 class="h4 mb-0">Dashboard</h1>
+  <span class="text-muted small">
+    {% if current_user.role == 'Requester' %}Showing your change requests{% else %}Showing all change requests{% endif %}
+  </span>
+</div>
+
+{# Summary cards #}
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="card h-100"><div class="card-body">
+      <div class="text-muted small">Total change requests</div>
+      <div class="fs-3 fw-semibold" data-test="cr-count">{{ dash.total }}</div>
+    </div></div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card h-100"><div class="card-body">
+      <div class="text-muted small">Open</div>
+      <div class="fs-3 fw-semibold" data-test="open-count">{{ dash.open_total }}</div>
+    </div></div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card h-100 {% if dash.overdue %}border-danger{% endif %}"><div class="card-body">
+      <div class="text-muted small">Overdue</div>
+      <div class="fs-3 fw-semibold {% if dash.overdue %}text-danger{% endif %}" data-test="overdue-count">{{ dash.overdue | length }}</div>
+    </div></div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card h-100"><div class="card-body">
+      <div class="text-muted small">Waiting for review</div>
+      <div class="fs-3 fw-semibold" data-test="review-count">
+        {{ dash.status_counts['Submitted'] + dash.status_counts['Under Review'] }}
+      </div>
+    </div></div>
+  </div>
+</div>
+
+{% if dash.total == 0 %}
+  <div class="alert alert-light border">
+    No change requests yet. Run <code>flask --app cms seed</code> to load demo data.
+  </div>
+{% endif %}
+
+<div class="row g-4">
+  {# Counts by status and by priority #}
+  <div class="col-lg-4">
+    <div class="card mb-4">
+      <div class="card-header fw-semibold">By status</div>
+      <ul class="list-group list-group-flush" data-test="status-counts">
+        {% for status, count in dash.status_counts.items() %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span class="badge status-badge">{{ status }}</span>
+            <span data-test="status-{{ status | lower | replace(' ', '-') }}">{{ count }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-header fw-semibold">Open, by priority</div>
+      <ul class="list-group list-group-flush" data-test="priority-counts">
+        {% for priority, count in dash.priority_counts.items() %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span class="badge priority-badge priority-{{ priority | lower }}">{{ priority }}</span>
+            <span data-test="priority-{{ priority | lower }}">{{ count }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  {# Work lists for this role, then overdue #}
+  <div class="col-lg-8">
+    {% for title, items, test_id in dash.sections %}
+      <div class="card mb-4">
+        <div class="card-header fw-semibold">{{ title }} <span class="text-muted fw-normal">({{ items | length }})</span></div>
+        <div class="card-body">
+          {% with items=items, empty="Nothing here right now.", test_id=test_id, show_due=False %}
+            {% include "_cr_table.html" %}
+          {% endwith %}
+        </div>
+      </div>
+    {% endfor %}
+
+    <div class="card {% if dash.overdue %}border-danger{% endif %}">
+      <div class="card-header fw-semibold">Overdue <span class="text-muted fw-normal">({{ dash.overdue | length }})</span></div>
+      <div class="card-body">
+        {% with items=dash.overdue, empty="No overdue change requests.", test_id="overdue", show_due=True %}
+          {% include "_cr_table.html" %}
+        {% endwith %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

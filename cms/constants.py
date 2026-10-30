@@ -37,6 +37,12 @@ class Status:
     ]
     # A change request in one of these statuses is finished.
     TERMINAL = [REJECTED, CLOSED]
+    # A change request in one of these statuses can no longer be overdue.
+    NOT_DUE = [RESOLVED, CLOSED, REJECTED]
+    # Statuses in which an engineer is expected to be working on the request.
+    ENGINEER_WORK = [ASSIGNED, IN_PROGRESS, REOPENED]
+    # Statuses waiting for a reviewer.
+    AWAITING_REVIEW = [SUBMITTED, UNDER_REVIEW]
 
 
 class Priority:
