@@ -20,7 +20,13 @@ def test_health_endpoint(client):
     assert response.get_json() == {"status": "ok"}
 
 
-def test_home_page_loads_with_empty_database(client):
+def test_home_page_loads_with_no_change_requests(app, client, login):
+    user = User(name="Only User", email="only@cms.local", role=Role.REQUESTER)
+    user.set_password("secret123")
+    db.session.add(user)
+    db.session.commit()
+
+    login("only@cms.local", "secret123")
     response = client.get("/")
     assert response.status_code == 200
     assert b"Change Management Software" in response.data
@@ -84,7 +90,8 @@ def test_seed_can_run_twice_without_duplicates(seeded):
     assert ChangeRequest.query.count() == 10
 
 
-def test_home_page_shows_seeded_counts(seeded, client):
+def test_home_page_shows_seeded_counts(seeded, client, login):
+    login("admin@cms.local")
     response = client.get("/")
     assert b'data-test="cr-count">10<' in response.data
 

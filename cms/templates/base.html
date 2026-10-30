@@ -11,9 +11,21 @@
   <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container">
       <a class="navbar-brand fw-semibold" href="{{ url_for('main.index') }}">CMS</a>
-      <span class="navbar-text text-white-50 small">Change Management Software</span>
-      {# Navigation links and the signed-in user are added by later stories (CMS-2, CMS-4, CMS-12). #}
+      <span class="navbar-text text-white-50 small me-auto">Change Management Software</span>
+      {# Page links (change requests, notifications, ...) are added by later stories. #}
       {% block nav_extra %}{% endblock %}
+      {% if current_user.is_authenticated %}
+        <span class="navbar-text text-white me-3" data-test="current-user">
+          {{ current_user.name }}
+          <span class="badge bg-light text-primary ms-1">{{ current_user.role }}</span>
+        </span>
+        <form method="post" action="{{ url_for('auth.logout') }}" class="d-inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-outline-light btn-sm">Sign out</button>
+        </form>
+      {% else %}
+        <a class="btn btn-outline-light btn-sm" href="{{ url_for('auth.login') }}">Sign in</a>
+      {% endif %}
     </div>
   </nav>
 
