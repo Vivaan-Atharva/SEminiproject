@@ -1,0 +1,97 @@
+classDiagram
+    direction LR
+
+    class User {
+        +int id
+        +str name
+        +str email
+        -str password_hash
+        +str role
+        +bool active
+        +set_password(password)
+        +check_password(password) bool
+        +has_role(roles) bool
+    }
+
+    class ChangeRequest {
+        +int id
+        +str cr_number
+        +str title
+        +str description
+        +str cr_type
+        +str priority
+        +str component
+        +str status
+        +date due_date
+        +str resolution_summary
+        +datetime created_at
+        +datetime updated_at
+        +datetime closed_at
+        +is_open() bool
+        +is_overdue() bool
+    }
+
+    class StatusHistory {
+        +int id
+        +str from_status
+        +str to_status
+        +str reason
+        +datetime timestamp
+    }
+
+    class AssignmentHistory {
+        +int id
+        +int from_user_id
+        +int to_user_id
+        +datetime timestamp
+    }
+
+    class Comment {
+        +int id
+        +str body
+        +bool is_work_note
+        +datetime created_at
+    }
+
+    class Notification {
+        +int id
+        +str message
+        +bool read
+        +datetime created_at
+    }
+
+    class SlaPolicy {
+        +str priority
+        +int target_days
+    }
+
+    class ChangeRequestService {
+        +create(data, user) ChangeRequest
+        +search(filters, user) list
+        +update(cr, data, user) ChangeRequest
+    }
+
+    class WorkflowService {
+        +allowed_next(cr, user) list
+        +transition(cr, to_status, user, reason) ChangeRequest
+    }
+
+    class AssignmentService {
+        +assign(cr, engineer, by_user) ChangeRequest
+    }
+
+    User "1" --> "0..*" ChangeRequest : raises
+    User "0..1" --> "0..*" ChangeRequest : is assigned
+    ChangeRequest "1" *-- "0..*" StatusHistory : has
+    ChangeRequest "1" *-- "0..*" AssignmentHistory : has
+    ChangeRequest "1" *-- "0..*" Comment : has
+    User "1" --> "0..*" Comment : writes
+    User "1" --> "0..*" Notification : receives
+    Notification "0..*" --> "1" ChangeRequest : about
+    ChangeRequest ..> SlaPolicy : due date from
+
+    ChangeRequestService ..> ChangeRequest : creates and edits
+    WorkflowService ..> ChangeRequest : changes status
+    WorkflowService ..> StatusHistory : records
+    AssignmentService ..> WorkflowService : uses
+    AssignmentService ..> AssignmentHistory : records

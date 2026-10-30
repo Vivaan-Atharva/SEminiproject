@@ -1,0 +1,38 @@
+sequenceDiagram
+    autonumber
+    actor Rv as Reviewer
+    actor E as Engineer
+    actor Rq as Requester
+    participant RT as Routes
+    participant A as AssignmentService
+    participant W as WorkflowService
+    participant DB as Database
+
+    Rv->>RT: Start review, then Approve
+    RT->>W: transition(cr, Under Review / Approved, reviewer)
+    W->>W: Check role and that the move is allowed
+    W->>DB: Update status + insert history
+
+    Rv->>RT: Assign to engineer
+    RT->>A: assign(cr, engineer, reviewer)
+    A->>A: Check engineer is active and has Engineer role
+    A->>DB: Set assignee + insert assignment history
+    A->>W: transition(cr, Assigned)
+    W->>DB: Update status + insert history
+
+    E->>RT: Start work
+    RT->>W: transition(cr, In Progress, engineer)
+    W->>W: Check user is the assignee
+    W->>DB: Update status + insert history
+
+    E->>RT: Resolve with summary
+    RT->>W: transition(cr, Resolved, engineer, summary)
+    alt Summary is empty
+        W-->>RT: Error: summary required
+    else Summary given
+        W->>DB: Save summary, update status + insert history
+    end
+
+    Rq->>RT: Close (or Reopen with reason)
+    RT->>W: transition(cr, Closed or Reopened, requester, reason)
+    W->>DB: Update status (+ closed date) + insert history

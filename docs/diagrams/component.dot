@@ -1,0 +1,58 @@
+// Component diagram for Change Management Software (layered modular monolith, see SAD section 4).
+// Render with: dot -Tpng component.dot -o component.png
+digraph Components {
+    rankdir=TB;
+    graph [fontname="Helvetica", fontsize=12, nodesep=0.35, ranksep=0.6, pad=0.3, compound=true];
+    node  [fontname="Helvetica", fontsize=11, shape=component, style=filled, fillcolor="#eef3fa", color="#1f4e79"];
+    edge  [color="#555555", arrowhead=vee];
+
+    Browser [shape=box, style="rounded,filled", fillcolor="#dfe9f5", label="Web browser\n(Jinja pages + Bootstrap)"];
+
+    subgraph cluster_app {
+        label="Flask application (cms/)"; style=rounded; color="#1f4e79"; fontcolor="#1f4e79";
+
+        subgraph cluster_routes {
+            label="Routes layer"; style=dashed; color="#888888"; fontcolor="#555555";
+            AuthR  [label="Auth routes"];
+            CRR    [label="Change request routes"];
+            DashR  [label="Dashboard routes"];
+            NotifR [label="Notification routes"];
+        }
+
+        subgraph cluster_services {
+            label="Services layer"; style=dashed; color="#888888"; fontcolor="#555555";
+            AuthS [label="Auth and role checks"];
+            CRS   [label="ChangeRequestService"];
+            WFS   [label="WorkflowService\n(status-flow engine)", fillcolor="#fff4d6"];
+            AsS   [label="AssignmentService"];
+            ComS  [label="Comment / timeline service"];
+            SlaS  [label="SLA / overdue service"];
+            NotS  [label="NotificationService"];
+        }
+
+        Models [shape=box3d, fillcolor="#f4f4f4", label="Models layer (SQLAlchemy)\nUser, ChangeRequest, StatusHistory,\nAssignmentHistory, Comment, Notification, SlaPolicy"];
+    }
+
+    DB [shape=cylinder, fillcolor="#f4f4f4", label="SQLite database"];
+    CI [shape=box, style="rounded,filled", fillcolor="#f4f4f4", label="GitHub Actions CI\n(pytest on Ubuntu, Windows, macOS)"];
+
+    Browser -> CRR [label=" HTTP", lhead=cluster_routes, fontsize=9];
+
+    AuthR  -> AuthS;
+    CRR    -> CRS;
+    CRR    -> WFS;
+    CRR    -> AsS;
+    CRR    -> ComS;
+    DashR  -> CRS;
+    DashR  -> SlaS;
+    NotifR -> NotS;
+
+    AsS  -> WFS;
+    WFS  -> NotS;
+    AsS  -> NotS;
+    ComS -> NotS;
+
+    WFS -> Models [ltail=cluster_services];
+    Models -> DB;
+    CI -> CRS [style=dashed, label=" runs tests", fontsize=9, lhead=cluster_app];
+}
