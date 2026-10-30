@@ -1,0 +1,7 @@
+/* Project-wide styles. Bootstrap handles most layout. */
+
+.status-badge {
+  background-color: #e7eef8;
+  color: #1f4e79;
+  font-weight: 500;
+}
