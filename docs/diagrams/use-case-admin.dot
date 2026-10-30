@@ -1,0 +1,30 @@
+// Use case diagram 2: administration and reporting (matches SRS section 8).
+// Render with: dot -Tpng use-case-admin.dot -o use-case-admin.png
+digraph UseCasesAdmin {
+    rankdir=LR;
+    graph [fontname="Helvetica", fontsize=12, nodesep=0.3, ranksep=1.3, pad=0.3];
+    node  [fontname="Helvetica", fontsize=11];
+    edge  [arrowhead=none, color="#555555"];
+
+    Admin    [shape=box, style="rounded,filled", fillcolor="#dfe9f5", label="«actor»\nAdmin"];
+    Reviewer [shape=box, style="rounded,filled", fillcolor="#dfe9f5", label="«actor»\nReviewer"];
+    AnyUser  [shape=box, style="rounded,filled", fillcolor="#dfe9f5", label="«actor»\nRequester /\nEngineer"];
+
+    subgraph cluster_cms {
+        label="Change Management Software - administration and reporting";
+        style="rounded"; color="#1f4e79"; fontcolor="#1f4e79"; fontsize=13;
+        node [shape=ellipse, style=filled, fillcolor="#fffbe6"];
+
+        Users    [label="Manage users and roles"];
+        Settings [label="Configure components,\npriorities and SLA targets"];
+        Audit    [label="Review audit history"];
+        SignIn   [label="Sign in / sign out"];
+        Dash     [label="View dashboard"];
+        Overdue  [label="View overdue\nchange requests"];
+        Notif    [label="View notifications"];
+    }
+
+    Admin    -> {Users Settings Audit SignIn Dash};
+    Reviewer -> {SignIn Dash Overdue Notif};
+    {SignIn Dash Notif} -> AnyUser;
+}

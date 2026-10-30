@@ -1,0 +1,20 @@
+flowchart TD
+    Start([Start]) --> Create[Requester creates change request]
+    Create --> Valid{Input valid?}
+    Valid -- No --> Fix[Show errors] --> Create
+    Valid -- Yes --> Submitted[Status: Submitted]
+    Submitted --> Review[Reviewer starts review]
+    Review --> Decide{Approve?}
+    Decide -- No --> Reason[Reviewer enters rejection reason] --> Rejected[Status: Rejected] --> End([End])
+    Decide -- Yes --> Approved[Status: Approved]
+    Approved --> Assign[Reviewer assigns an active engineer]
+    Assign --> Assigned[Status: Assigned]
+    Assigned --> StartWork[Engineer starts work]
+    StartWork --> InProgress[Status: In Progress]
+    InProgress --> Work[Engineer works and adds notes]
+    Work --> Resolve[Engineer resolves with summary]
+    Resolve --> Resolved[Status: Resolved]
+    Resolved --> Check{Requester satisfied?}
+    Check -- Yes --> Closed[Status: Closed] --> End
+    Check -- No --> Reopen[Requester reopens with reason]
+    Reopen --> Reopened[Status: Reopened] --> InProgress

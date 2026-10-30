@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Not allowed - CMS{% endblock %}
+{% block content %}
+<h1 class="h3">403 - Not allowed</h1>
+<p>Your role does not have permission to do this.</p>
+<a href="{{ url_for('main.index') }}">Back to home</a>
+{% endblock %}

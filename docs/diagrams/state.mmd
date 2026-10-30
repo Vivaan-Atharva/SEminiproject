@@ -1,0 +1,17 @@
+stateDiagram-v2
+    [*] --> Submitted : create
+    Submitted --> UnderReview : start review (Reviewer)
+    UnderReview --> Approved : approve (Reviewer)
+    UnderReview --> Rejected : reject + reason (Reviewer)
+    Approved --> Assigned : assign engineer (Reviewer)
+    Assigned --> InProgress : start work (Assignee)
+    InProgress --> Assigned : reassign to another engineer (Reviewer)
+    InProgress --> Resolved : resolve + summary (Assignee)
+    Resolved --> Closed : close (Requester / Reviewer)
+    Resolved --> Reopened : reopen + reason (Requester / Reviewer)
+    Reopened --> InProgress : resume work (Assignee)
+    Rejected --> [*]
+    Closed --> [*]
+
+    UnderReview : Under Review
+    InProgress : In Progress

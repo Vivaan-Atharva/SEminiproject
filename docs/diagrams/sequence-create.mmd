@@ -1,0 +1,25 @@
+sequenceDiagram
+    autonumber
+    actor R as Requester
+    participant UI as Browser
+    participant RT as Routes
+    participant S as ChangeRequestService
+    participant W as WorkflowService
+    participant DB as Database
+
+    R->>UI: Fill in title, description, type, priority, component
+    UI->>RT: POST /change-requests
+    RT->>RT: Check the user is signed in
+    RT->>S: create(form data, user)
+    S->>S: Validate required fields and allowed values
+    alt Invalid input
+        S-->>RT: Validation errors
+        RT-->>UI: Show form again with error messages
+    else Valid input
+        S->>DB: Insert change request (next CR number, status Submitted, due date)
+        S->>W: record initial status (Submitted)
+        W->>DB: Insert status history row
+        DB-->>S: Saved in one transaction
+        S-->>RT: New change request
+        RT-->>UI: Redirect to the change request page
+    end
