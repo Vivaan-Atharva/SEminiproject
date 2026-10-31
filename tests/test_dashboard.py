@@ -176,22 +176,7 @@ def test_statuses_and_priorities_have_text_labels(seeded, client, login):
         assert f">{label}</span>" in page
 
 
-def test_cr_numbers_are_plain_text_until_detail_page_exists(seeded, client, login):
-    login("admin@cms.local")
-    page = client.get("/").get_data(as_text=True)
-    assert "CR-0006" in page
-    assert 'href="/change-requests/6"' not in page
-
-
-def test_cr_numbers_link_to_detail_page_once_it_exists(app, seeded, client, login):
-    def detail(cr_id):
-        return f"detail {cr_id}"
-
-    app.add_url_rule(
-        "/change-requests/<int:cr_id>",
-        endpoint="change_requests.detail",
-        view_func=detail,
-    )
+def test_cr_numbers_link_to_detail_page(seeded, client, login):
     login("admin@cms.local")
     page = client.get("/").get_data(as_text=True)
     cr = ChangeRequest.query.filter_by(cr_number="CR-0006").one()

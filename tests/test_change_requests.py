@@ -79,7 +79,7 @@ def test_new_form_valid_post_creates_request_and_redirects(seeded, client, login
     assert response.status_code == 302
     created = ChangeRequest.query.filter_by(cr_number="CR-0011").one()
     assert created.requester.email == "requester@cms.local"
-    assert response.headers["Location"].endswith("/")
+    assert response.headers["Location"].endswith(f"/change-requests/{created.id}")
 
 
 def test_new_form_invalid_post_keeps_values_and_creates_nothing(seeded, client, login):
