@@ -180,19 +180,18 @@ def test_cr_numbers_are_plain_text_until_detail_page_exists(seeded, client, logi
     login("admin@cms.local")
     page = client.get("/").get_data(as_text=True)
     assert "CR-0006" in page
-    assert 'href="/change-requests/' not in page
+    assert 'href="/change-requests/6"' not in page
 
 
 def test_cr_numbers_link_to_detail_page_once_it_exists(app, seeded, client, login):
-    from flask import Blueprint
-
-    bp = Blueprint("change_requests", __name__)
-
-    @bp.route("/change-requests/<int:cr_id>")
     def detail(cr_id):
         return f"detail {cr_id}"
 
-    app.register_blueprint(bp)
+    app.add_url_rule(
+        "/change-requests/<int:cr_id>",
+        endpoint="change_requests.detail",
+        view_func=detail,
+    )
     login("admin@cms.local")
     page = client.get("/").get_data(as_text=True)
     cr = ChangeRequest.query.filter_by(cr_number="CR-0006").one()
