@@ -1,11 +1,12 @@
 """Create change request pages (CMS-3)."""
 
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from werkzeug.routing import BuildError
 
-from cms.constants import COMPONENTS, CRType, Priority
-from cms.services.change_request_service import ValidationError, create
+from cms.constants import COMPONENTS, CRType, Priority, Status
+from cms.models import ChangeRequest
+from cms.services.change_request_service import ValidationError, create, get_by_id_or_404, search
 
 bp = Blueprint("change_requests", __name__, url_prefix="/change-requests")
 
@@ -35,9 +36,43 @@ def new():
         return _new_form(data=data, errors=error.errors), 400
 
     flash(f"{change_request.cr_number} was created and submitted for review.", "success")
-    try:
-        return redirect(url_for("change_requests.detail", cr_id=change_request.id))
-    except BuildError:
-        # CMS-4 owns the detail and list endpoints. Until it merges, the
-        # dashboard is the available signed-in destination.
-        return redirect(url_for("main.index"))
+    return redirect(url_for("change_requests.detail", cr_id=change_request.id))
+
+
+def _optional_id(name):
+    value = request.args.get(name)
+    return int(value) if value and value.isdigit() else None
+
+
+@bp.route("")
+@bp.route("/")
+@login_required
+def list():
+    filters = {
+        "q": request.args.get("q", "").strip(),
+        "status": request.args.get("status") or None,
+        "priority": request.args.get("priority") or None,
+        "component": request.args.get("component") or None,
+        "sort": request.args.get("sort", "newest"),
+    }
+    items = search(
+        current_user,
+        **filters,
+        assignee_id=_optional_id("assignee_id"),
+        requester_id=_optional_id("requester_id"),
+    )
+    return render_template(
+        "change_requests/list.html",
+        items=items,
+        filters=filters,
+        statuses=Status.ALL,
+        priorities=Priority.ALL,
+        components=COMPONENTS,
+    )
+
+
+@bp.route("/<int:cr_id>")
+@login_required
+def detail(cr_id):
+    change_request = get_by_id_or_404(cr_id, current_user)
+    return render_template("change_requests/detail.html", cr=change_request)

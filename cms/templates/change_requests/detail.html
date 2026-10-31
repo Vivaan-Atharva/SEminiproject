@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}{{ cr.cr_number }} · CMS{% endblock %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-start mb-4">
+    <div><p class="text-muted mb-1">{{ cr.cr_number }}</p><h1 class="h3">{{ cr.title }}</h1></div>
+    <a class="btn btn-outline-secondary" href="{{ url_for('change_requests.list') }}">Back to list</a>
+  </div>
+  <div class="row g-4">
+    <div class="col-lg-8"><div class="card"><div class="card-body"><h2 class="h5">Description</h2><p class="mb-0" style="white-space: pre-wrap">{{ cr.description }}</p></div></div></div>
+    <div class="col-lg-4"><div class="card"><div class="card-body"><dl class="mb-0">
+      <dt>Type</dt><dd>{{ cr.cr_type }}</dd><dt>Priority</dt><dd>{{ cr.priority }}</dd><dt>Component</dt><dd>{{ cr.component }}</dd><dt>Status</dt><dd>{{ cr.status }}</dd>
+      <dt>Requester</dt><dd>{{ cr.requester.name }}</dd><dt>Assignee</dt><dd>{{ cr.assignee.name if cr.assignee else 'Unassigned' }}</dd><dt>Due date</dt><dd>{{ cr.due_date.strftime('%d %b %Y') if cr.due_date else '-' }}</dd>
+      <dt>Resolution summary</dt><dd>{{ cr.resolution_summary or '-' }}</dd><dt>Created</dt><dd>{{ cr.created_at.strftime('%d %b %Y %H:%M') }}</dd><dt>Updated</dt><dd>{{ cr.updated_at.strftime('%d %b %Y %H:%M') }}</dd><dt>Closed</dt><dd>{{ cr.closed_at.strftime('%d %b %Y %H:%M') if cr.closed_at else '-' }}</dd>
+    </dl></div></div></div>
+  </div>
+  {% include "change_requests/_actions.html" %}
+  {% include "change_requests/_history.html" %}
+{% endblock %}
