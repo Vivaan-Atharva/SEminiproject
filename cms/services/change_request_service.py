@@ -6,6 +6,7 @@ from sqlalchemy import case, func, or_
 from cms.constants import COMPONENTS, CRType, Priority, Role, Status
 from cms.extensions import db
 from cms.models import ChangeRequest, format_cr_number
+from cms.services import workflow_service
 from cms.services.dashboard_service import visible_change_requests
 
 
@@ -61,6 +62,7 @@ def create(data: dict, user) -> ChangeRequest:
         **values,
     )
     db.session.add(change_request)
+    workflow_service.record_initial_status(change_request, user)
     db.session.commit()
     return change_request
 
