@@ -1,1 +1,25 @@
-<!-- Filled in by CMS-5/6/7/8/9. -->
+<!-- Filled in by CMS-5/6/7/8/9. Each story adds its own block below. -->
+
+{# CMS-7: assign / reassign (Reviewer and Admin, Approved / Assigned / In Progress) #}
+{% if can_assign(current_user) and cr.status in ASSIGNABLE_STATUSES %}
+  <div class="card mt-4">
+    <div class="card-body">
+      <h2 class="h5">{{ 'Reassign' if cr.assignee else 'Assign' }}</h2>
+      <form method="post" action="{{ url_for('assignment.assign', cr_id=cr.id) }}" class="row g-2 align-items-end">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="col-md-6">
+          <label for="assignee_id" class="form-label">Engineer</label>
+          <select id="assignee_id" name="assignee_id" class="form-select" required>
+            <option value="">Choose an engineer</option>
+            {% for engineer in assignable_engineers() %}
+              <option value="{{ engineer.id }}" {{ 'selected' if cr.assignee_id == engineer.id }}>{{ engineer.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-auto">
+          <button type="submit" class="btn btn-primary">{{ 'Reassign' if cr.assignee else 'Assign' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endif %}
