@@ -17,7 +17,10 @@
             <a class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}"
                href="{{ url_for('main.index') }}">Dashboard</a>
           </li>
-          {# Add links for new pages here, e.g. Change requests (CMS-4), Notifications (CMS-14). #}
+          <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'change_requests.new' %}active{% endif %}"
+               href="{{ url_for('change_requests.new') }}">New request</a>
+          </li>
           {% block nav_extra %}{% endblock %}
         </ul>
       {% else %}

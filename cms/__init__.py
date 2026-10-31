@@ -27,10 +27,12 @@ def create_app(config_object=Config):
 
     from cms import models  # noqa: F401  (registers the tables)
     from cms.routes.auth import bp as auth_bp
+    from cms.routes.change_requests import bp as change_requests_bp
     from cms.routes.main import bp as main_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp)
+    app.register_blueprint(change_requests_bp)
 
     from cms.cli import register_cli
 
