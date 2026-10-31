@@ -5,6 +5,7 @@ from sqlalchemy import func
 from cms.constants import COMPONENTS, CRType, Priority, Status
 from cms.extensions import db
 from cms.models import ChangeRequest, format_cr_number
+from cms.services import workflow_service
 
 
 class ValidationError(Exception):
@@ -59,5 +60,6 @@ def create(data: dict, user) -> ChangeRequest:
         **values,
     )
     db.session.add(change_request)
+    workflow_service.record_initial_status(change_request, user)
     db.session.commit()
     return change_request
