@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}New change request · CMS{% endblock %}
+
+{% block content %}
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <h1 class="h3 mb-4">New change request</h1>
+      <form method="post" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="mb-3">
+          <label class="form-label" for="title">Title</label>
+          <input class="form-control {% if errors.title %}is-invalid{% endif %}" id="title" name="title"
+                 maxlength="200" required value="{{ data.get('title', '') }}">
+          {% if errors.title %}<div class="invalid-feedback">{{ errors.title }}</div>{% endif %}
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="description">Description</label>
+          <textarea class="form-control {% if errors.description %}is-invalid{% endif %}" id="description"
+                    name="description" rows="5" required>{{ data.get('description', '') }}</textarea>
+          {% if errors.description %}<div class="invalid-feedback">{{ errors.description }}</div>{% endif %}
+        </div>
+
+        <div class="row">
+          {% for name, label, options in [('cr_type', 'Type', cr_types), ('priority', 'Priority', priorities), ('component', 'Component', components)] %}
+            <div class="col-md-4 mb-3">
+              <label class="form-label" for="{{ name }}">{{ label }}</label>
+              <select class="form-select {% if errors.get(name) %}is-invalid{% endif %}" id="{{ name }}" name="{{ name }}" required>
+                <option value="">Choose {{ label | lower }}</option>
+                {% for option in options %}
+                  <option value="{{ option }}" {% if data.get(name) == option %}selected{% endif %}>{{ option }}</option>
+                {% endfor %}
+              </select>
+              {% if errors.get(name) %}<div class="invalid-feedback">{{ errors[name] }}</div>{% endif %}
+            </div>
+          {% endfor %}
+        </div>
+
+        <button class="btn btn-primary" type="submit">Submit request</button>
+      </form>
+    </div>
+  </div>
+{% endblock %}
