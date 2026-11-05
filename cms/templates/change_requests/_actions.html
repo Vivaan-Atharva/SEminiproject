@@ -23,3 +23,40 @@
     </div>
   </div>
 {% endif %}
+
+{# CMS-6: start review / approve / reject (a reviewer; the status engine decides who may) #}
+{% set review_steps = allowed_next(cr, current_user) %}
+{% if Status.UNDER_REVIEW in review_steps %}
+  <div class="card mt-4">
+    <div class="card-body">
+      <h2 class="h5">Review</h2>
+      <form method="post" action="{{ url_for('workflow.start_review', cr_id=cr.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-primary">Start review</button>
+      </form>
+    </div>
+  </div>
+{% endif %}
+{% if Status.APPROVED in review_steps or Status.REJECTED in review_steps %}
+  <div class="card mt-4">
+    <div class="card-body">
+      <h2 class="h5">Review decision</h2>
+      {% if Status.APPROVED in review_steps %}
+        <form method="post" action="{{ url_for('workflow.approve', cr_id=cr.id) }}" class="mb-4">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-success">Approve</button>
+        </form>
+      {% endif %}
+      {% if Status.REJECTED in review_steps %}
+        <form method="post" action="{{ url_for('workflow.reject', cr_id=cr.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="mb-3">
+            <label for="reject_reason" class="form-label">Reason for rejecting</label>
+            <textarea id="reject_reason" name="reason" class="form-control" rows="3" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-danger">Reject</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+{% endif %}
