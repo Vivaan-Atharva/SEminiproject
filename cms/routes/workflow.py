@@ -2,13 +2,14 @@
 
 CMS-6: a reviewer starts a review, approves or rejects a change request.
 CMS-8: an engineer starts work on a change request and resolves it.
+CMS-9: the requester (or a reviewer) closes a resolved change request, or reopens it.
 
 Every route only asks the status engine to make the move; all the rules
 (who may do it, which input is needed) live in ``workflow_service``.
 """
 
 from flask import Blueprint, abort, flash, redirect, request, url_for
-from flask_login import current_user
+from flask_login import current_user, login_required
 
 from cms.constants import Role, Status
 from cms.decorators import roles_required
@@ -91,4 +92,26 @@ def resolve(cr_id):
         Status.RESOLVED,
         "{cr} was resolved.",
         resolution_summary=request.form.get("resolution_summary"),
+    )
+
+
+# --- requester actions (CMS-9) ----------------------------------------------
+
+
+@bp.route("/<int:cr_id>/close", methods=["POST"])
+@login_required
+def close(cr_id):
+    """Resolved -> Closed (the requester or a reviewer; the engine checks who)."""
+    return _perform(cr_id, Status.CLOSED, "{cr} is now closed.")
+
+
+@bp.route("/<int:cr_id>/reopen", methods=["POST"])
+@login_required
+def reopen(cr_id):
+    """Resolved -> Reopened. A reason is required and is kept in the history."""
+    return _perform(
+        cr_id,
+        Status.REOPENED,
+        "{cr} was reopened. The assigned engineer can resume work.",
+        reason=request.form.get("reason"),
     )
