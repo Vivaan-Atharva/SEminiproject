@@ -1,8 +1,7 @@
 """Workflow action routes: the buttons on a change request's detail page.
 
-CMS-6 (this branch): a reviewer starts a review, approves or rejects a change
-request. CMS-8 adds the engineer actions (start work, resolve) to this same
-blueprint.
+CMS-6: a reviewer starts a review, approves or rejects a change request.
+CMS-8: an engineer starts work on a change request and resolves it.
 
 Every route only asks the status engine to make the move; all the rules
 (who may do it, which input is needed) live in ``workflow_service``.
@@ -44,6 +43,9 @@ def _perform(cr_id, to_status, success_message, **inputs):
     return redirect(url_for("change_requests.detail", cr_id=cr.id))
 
 
+# --- reviewer actions (CMS-6) -----------------------------------------------
+
+
 @bp.route("/<int:cr_id>/start-review", methods=["POST"])
 @roles_required(Role.REVIEWER)
 def start_review(cr_id):
@@ -67,4 +69,26 @@ def reject(cr_id):
         Status.REJECTED,
         "{cr} was rejected.",
         reason=request.form.get("reason"),
+    )
+
+
+# --- engineer actions (CMS-8) -----------------------------------------------
+
+
+@bp.route("/<int:cr_id>/start-work", methods=["POST"])
+@roles_required(Role.ENGINEER)
+def start_work(cr_id):
+    """Assigned -> In Progress, or Reopened -> In Progress (the assignee only)."""
+    return _perform(cr_id, Status.IN_PROGRESS, "You started work on {cr}.")
+
+
+@bp.route("/<int:cr_id>/resolve", methods=["POST"])
+@roles_required(Role.ENGINEER)
+def resolve(cr_id):
+    """In Progress -> Resolved, with a summary of what was done (the assignee only)."""
+    return _perform(
+        cr_id,
+        Status.RESOLVED,
+        "{cr} was resolved.",
+        resolution_summary=request.form.get("resolution_summary"),
     )

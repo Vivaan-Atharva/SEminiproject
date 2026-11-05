@@ -1,5 +1,34 @@
 <!-- Filled in by CMS-5/6/7/8/9. Each story adds its own block below. -->
 
+{# CMS-8: start work / resolve (the assigned engineer; the status engine decides who may) #}
+{% set next_steps = allowed_next(cr, current_user) %}
+{% if Status.IN_PROGRESS in next_steps %}
+  <div class="card mt-4">
+    <div class="card-body">
+      <h2 class="h5">{{ 'Resume work' if cr.status == Status.REOPENED else 'Start work' }}</h2>
+      <form method="post" action="{{ url_for('workflow.start_work', cr_id=cr.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-primary">{{ 'Resume work' if cr.status == Status.REOPENED else 'Start work' }}</button>
+      </form>
+    </div>
+  </div>
+{% endif %}
+{% if Status.RESOLVED in next_steps %}
+  <div class="card mt-4">
+    <div class="card-body">
+      <h2 class="h5">Resolve</h2>
+      <form method="post" action="{{ url_for('workflow.resolve', cr_id=cr.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="mb-3">
+          <label for="resolution_summary" class="form-label">What did you do to resolve it?</label>
+          <textarea id="resolution_summary" name="resolution_summary" class="form-control" rows="3" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-success">Mark as resolved</button>
+      </form>
+    </div>
+  </div>
+{% endif %}
+
 {# CMS-7: assign / reassign (Reviewer and Admin, Approved / Assigned / In Progress) #}
 {% if can_assign(current_user) and cr.status in ASSIGNABLE_STATUSES %}
   <div class="card mt-4">
