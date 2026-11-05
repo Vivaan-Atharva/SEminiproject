@@ -1,1 +1,28 @@
-<!-- Filled in by CMS-5/6/7/8/9/10. -->
+{# CMS-5/8: status history, oldest first. CMS-10 will add comments to this timeline. #}
+<div class="card mt-4">
+  <div class="card-body">
+    <h2 class="h5">Status history</h2>
+    {% if cr.status_history %}
+      <ul class="list-group list-group-flush">
+        {% for entry in cr.status_history %}
+          <li class="list-group-item px-0 history-entry">
+            <div class="d-flex justify-content-between">
+              {% if entry.from_status %}
+                <span>{{ entry.from_status }} &rarr; <strong>{{ entry.to_status }}</strong></span>
+              {% else %}
+                <span>Created as <strong>{{ entry.to_status }}</strong></span>
+              {% endif %}
+              <small class="text-muted">{{ entry.created_at.strftime('%d %b %Y %H:%M') }}</small>
+            </div>
+            <small class="text-muted">by {{ entry.user.name }}</small>
+            {% if entry.reason %}
+              <div class="mt-1" style="white-space: pre-wrap">Reason: {{ entry.reason }}</div>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="text-muted mb-0">No status changes recorded yet.</p>
+    {% endif %}
+  </div>
+</div>
