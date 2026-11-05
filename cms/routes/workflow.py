@@ -1,8 +1,7 @@
 """Workflow action routes: the buttons on a change request's detail page.
 
-CMS-8 (this file): an engineer starts work on a change request and resolves it.
-CMS-6 adds the reviewer actions (start review, approve, reject) to this same
-blueprint.
+CMS-6: a reviewer starts a review, approves or rejects a change request.
+CMS-8: an engineer starts work on a change request and resolves it.
 
 Every route only asks the status engine to make the move; all the rules
 (who may do it, which input is needed) live in ``workflow_service``.
@@ -42,6 +41,38 @@ def _perform(cr_id, to_status, success_message, **inputs):
     else:
         flash(success_message.format(cr=cr.cr_number), "success")
     return redirect(url_for("change_requests.detail", cr_id=cr.id))
+
+
+# --- reviewer actions (CMS-6) -----------------------------------------------
+
+
+@bp.route("/<int:cr_id>/start-review", methods=["POST"])
+@roles_required(Role.REVIEWER)
+def start_review(cr_id):
+    """Submitted -> Under Review."""
+    return _perform(cr_id, Status.UNDER_REVIEW, "{cr} is now under review.")
+
+
+@bp.route("/<int:cr_id>/approve", methods=["POST"])
+@roles_required(Role.REVIEWER)
+def approve(cr_id):
+    """Under Review -> Approved."""
+    return _perform(cr_id, Status.APPROVED, "{cr} was approved.")
+
+
+@bp.route("/<int:cr_id>/reject", methods=["POST"])
+@roles_required(Role.REVIEWER)
+def reject(cr_id):
+    """Under Review -> Rejected. A reason is required and is kept in the history."""
+    return _perform(
+        cr_id,
+        Status.REJECTED,
+        "{cr} was rejected.",
+        reason=request.form.get("reason"),
+    )
+
+
+# --- engineer actions (CMS-8) -----------------------------------------------
 
 
 @bp.route("/<int:cr_id>/start-work", methods=["POST"])
