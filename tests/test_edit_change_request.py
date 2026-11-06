@@ -6,7 +6,7 @@ import pytest
 
 from cms.constants import COMPONENTS, CRType, Priority, Status
 from cms.extensions import db
-from cms.models import ChangeRequest, User
+from cms.models import ChangeRequest, EditHistory, User
 from cms.services.change_request_service import ValidationError, can_edit, create, update
 
 
@@ -42,8 +42,9 @@ def test_other_requester_and_engineer_cannot_edit(cr):
     assert not can_edit(cr, user("engineer1@cms.local"))
 
 
-def test_closed_request_cannot_be_edited(cr):
-    cr.status = Status.CLOSED
+@pytest.mark.parametrize("status", [Status.CLOSED, Status.REJECTED])
+def test_closed_or_rejected_request_cannot_be_edited(cr, status):
+    cr.status = status
     db.session.commit()
 
     assert not can_edit(cr, user("reviewer@cms.local"))
@@ -105,8 +106,9 @@ def test_edit_forbidden_for_other_users(cr, client, login, email):
     assert client.post(f"/change-requests/{cr.id}/edit", data=form()).status_code == 403
 
 
-def test_edit_forbidden_once_closed(cr, client, login):
-    cr.status = Status.CLOSED
+@pytest.mark.parametrize("status", [Status.CLOSED, Status.REJECTED])
+def test_edit_forbidden_once_closed_or_rejected(cr, client, login, status):
+    cr.status = status
     db.session.commit()
     login("reviewer@cms.local")
 
@@ -132,3 +134,33 @@ def test_detail_shows_edit_button_only_when_allowed(cr, client, login, logout):
     logout()
     login("engineer1@cms.local")
     assert b"/edit" not in client.get(f"/change-requests/{cr.id}").data
+
+
+def test_update_records_only_changed_fields(cr):
+    editor = user("reviewer@cms.local")
+
+    update(cr, form(title="Original", priority=Priority.HIGH), editor)
+
+    rows = EditHistory.query.filter_by(change_request_id=cr.id).all()
+    changed = {row.field: (row.old_value, row.new_value) for row in rows}
+    assert "title" not in changed
+    assert changed["priority"] == (Priority.LOW, Priority.HIGH)
+    assert all(row.user == editor for row in rows)
+
+
+def test_update_with_no_changes_records_nothing(cr):
+    same = {f: getattr(cr, f) for f in ("title", "description", "cr_type", "priority", "component")}
+
+    update(cr, same, user("requester@cms.local"))
+
+    assert EditHistory.query.count() == 0
+
+
+def test_detail_page_shows_edit_history(cr, client, login):
+    login("requester@cms.local")
+    client.post(f"/change-requests/{cr.id}/edit", data=form(title="Renamed"))
+
+    body = client.get(f"/change-requests/{cr.id}").data
+
+    assert b"Edit history" in body
+    assert b"Original &rarr; Renamed" in body
