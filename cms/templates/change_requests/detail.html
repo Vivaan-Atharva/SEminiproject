@@ -5,7 +5,7 @@
 {% block content %}
   <div class="d-flex justify-content-between align-items-start mb-4">
     <div><p class="text-muted mb-1">{{ cr.cr_number }}</p><h1 class="h3">{{ cr.title }}</h1></div>
-    <a class="btn btn-outline-secondary" href="{{ url_for('change_requests.list') }}">Back to list</a>
+    <div>{% if can_edit %}<a class="btn btn-primary me-2" href="{{ url_for('change_requests.edit', cr_id=cr.id) }}">Edit</a>{% endif %}<a class="btn btn-outline-secondary" href="{{ url_for('change_requests.list') }}">Back to list</a></div>
   </div>
   <div class="row g-4">
     <div class="col-lg-8"><div class="card"><div class="card-body"><h2 class="h5">Description</h2><p class="mb-0" style="white-space: pre-wrap">{{ cr.description }}</p></div></div></div>
