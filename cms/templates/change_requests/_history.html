@@ -26,3 +26,28 @@
     {% endif %}
   </div>
 </div>
+
+{# CMS-11: field edits, oldest first. #}
+<div class="card mt-4">
+  <div class="card-body">
+    <h2 class="h5">Edit history</h2>
+    {% if cr.edit_history %}
+      <ul class="list-group list-group-flush">
+        {% for entry in cr.edit_history %}
+          <li class="list-group-item px-0 edit-entry">
+            <div class="d-flex justify-content-between">
+              <span><strong>{{ entry.field | replace('cr_type', 'type') | capitalize }}</strong> changed</span>
+              <small class="text-muted">{{ entry.created_at.strftime('%d %b %Y %H:%M') }}</small>
+            </div>
+            <small class="text-muted">by {{ entry.user.name }}</small>
+            {% if entry.field != 'description' %}
+              <div class="mt-1">{{ entry.old_value }} &rarr; {{ entry.new_value }}</div>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="text-muted mb-0">No edits yet.</p>
+    {% endif %}
+  </div>
+</div>

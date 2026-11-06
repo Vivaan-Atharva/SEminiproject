@@ -1,11 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}New change request · CMS{% endblock %}
+{% set heading = heading or "New change request" %}
+{% block title %}{{ heading }} · CMS{% endblock %}
 
 {% block content %}
   <div class="row justify-content-center">
     <div class="col-lg-8">
-      <h1 class="h3 mb-4">New change request</h1>
+      <h1 class="h3 mb-4">{{ heading }}</h1>
       <form method="post" novalidate>
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
@@ -38,7 +39,8 @@
           {% endfor %}
         </div>
 
-        <button class="btn btn-primary" type="submit">Submit request</button>
+        <button class="btn btn-primary" type="submit">{{ submit_label or "Submit request" }}</button>
+        {% if cancel_url %}<a class="btn btn-outline-secondary ms-2" href="{{ cancel_url }}">Cancel</a>{% endif %}
       </form>
     </div>
   </div>
