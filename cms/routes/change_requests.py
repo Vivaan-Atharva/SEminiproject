@@ -53,6 +53,7 @@ def list():
         "status": request.args.get("status") or None,
         "priority": request.args.get("priority") or None,
         "component": request.args.get("component") or None,
+        "overdue": request.args.get("overdue") == "1",
         "sort": request.args.get("sort", "newest"),
     }
     items = search(

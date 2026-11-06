@@ -1,6 +1,8 @@
-"""Business rules for creating change requests (CMS-3)."""
+"""Business rules for creating, finding and editing change requests (CMS-3, CMS-4, CMS-11, CMS-13)."""
 
-from flask import abort
+from datetime import date, timedelta
+
+from flask import abort, current_app
 from sqlalchemy import case, func, or_
 
 from cms.constants import COMPONENTS, CRType, Priority, Role, Status
@@ -51,6 +53,22 @@ def validate(data: dict) -> dict[str, str]:
     return cleaned
 
 
+def due_date_for(priority: str, start: date | None = None) -> date:
+    """Return the due date for a change request of *priority* started on *start* (CMS-13)."""
+    start = start or date.today()
+    sla_days = current_app.config.get("SLA_DAYS", Priority.DEFAULT_SLA_DAYS)
+    return start + timedelta(days=sla_days[priority])
+
+
+def set_priority(change_request: ChangeRequest, priority: str) -> None:
+    """Change the priority and recalculate the due date from the creation day (CMS-13)."""
+    if priority == change_request.priority and change_request.due_date is not None:
+        return
+    change_request.priority = priority
+    created = change_request.created_at.date() if change_request.created_at else date.today()
+    change_request.due_date = due_date_for(priority, created)
+
+
 def create(data: dict, user) -> ChangeRequest:
     """Validate, persist and return a newly submitted change request."""
     values = validate(data)
@@ -59,6 +77,7 @@ def create(data: dict, user) -> ChangeRequest:
         cr_number=format_cr_number(highest_id + 1),
         status=Status.SUBMITTED,
         requester=user,
+        due_date=due_date_for(values["priority"]),
         **values,
     )
     db.session.add(change_request)
@@ -76,6 +95,8 @@ def search(
     assignee_id=None,
     requester_id=None,
     component=None,
+    overdue=False,
+    today=None,
     sort="newest",
 ):
     """Return change requests visible to *user*, with optional filters."""
@@ -93,6 +114,12 @@ def search(
         query = query.filter(ChangeRequest.assignee_id == assignee_id)
     if requester_id is not None:
         query = query.filter(ChangeRequest.requester_id == requester_id)
+    if overdue:
+        query = query.filter(
+            ChangeRequest.due_date.is_not(None),
+            ChangeRequest.due_date < (today or date.today()),
+            ChangeRequest.status.not_in(Status.NOT_DUE),
+        )
 
     if sort == "oldest":
         return query.order_by(ChangeRequest.created_at, ChangeRequest.id).all()
