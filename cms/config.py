@@ -6,6 +6,18 @@ committed to the repository.
 
 import os
 
+from cms.constants import Priority
+
+
+def _sla_days_from_env() -> dict:
+    """Read SLA days from CMS_SLA_DAYS, e.g. "Critical=1,High=3,Medium=5,Low=10"."""
+    days = dict(Priority.DEFAULT_SLA_DAYS)
+    for item in os.environ.get("CMS_SLA_DAYS", "").split(","):
+        name, _, value = item.partition("=")
+        if name.strip() in days and value.strip().isdigit():
+            days[name.strip()] = int(value)
+    return days
+
 
 class Config:
     SECRET_KEY = os.environ.get("CMS_SECRET_KEY", "dev-only-change-me")
@@ -20,6 +32,9 @@ class Config:
     REMEMBER_COOKIE_HTTPONLY = True
     # Show the demo account hint on the login page (turn off outside development).
     SHOW_DEMO_LOGINS = os.environ.get("CMS_SHOW_DEMO_LOGINS", "1") == "1"
+
+    # SLA days per priority used to set due dates (CMS-13).
+    SLA_DAYS = _sla_days_from_env()
 
 
 class TestConfig(Config):

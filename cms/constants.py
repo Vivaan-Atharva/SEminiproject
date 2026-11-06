@@ -53,8 +53,9 @@ class Priority:
 
     ALL = [CRITICAL, HIGH, MEDIUM, LOW]
 
-    # Days allowed to finish a change request, by priority (CMS-13).
-    DUE_IN_DAYS = {CRITICAL: 1, HIGH: 3, MEDIUM: 7, LOW: 14}
+    # Default SLA: days allowed to finish a change request, by priority (CMS-13).
+    # The live values come from the SLA_DAYS setting in cms/config.py.
+    DEFAULT_SLA_DAYS = {CRITICAL: 1, HIGH: 3, MEDIUM: 5, LOW: 10}
 
 
 class CRType:

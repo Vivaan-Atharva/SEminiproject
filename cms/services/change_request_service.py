@@ -2,7 +2,7 @@
 
 from datetime import date, timedelta
 
-from flask import abort
+from flask import abort, current_app
 from sqlalchemy import case, func, or_
 
 from cms.constants import COMPONENTS, CRType, Priority, Role, Status
@@ -56,7 +56,8 @@ def validate(data: dict) -> dict[str, str]:
 def due_date_for(priority: str, start: date | None = None) -> date:
     """Return the due date for a change request of *priority* started on *start* (CMS-13)."""
     start = start or date.today()
-    return start + timedelta(days=Priority.DUE_IN_DAYS[priority])
+    sla_days = current_app.config.get("SLA_DAYS", Priority.DEFAULT_SLA_DAYS)
+    return start + timedelta(days=sla_days[priority])
 
 
 def set_priority(change_request: ChangeRequest, priority: str) -> None:
