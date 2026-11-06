@@ -59,6 +59,15 @@ def due_date_for(priority: str, start: date | None = None) -> date:
     return start + timedelta(days=Priority.DUE_IN_DAYS[priority])
 
 
+def set_priority(change_request: ChangeRequest, priority: str) -> None:
+    """Change the priority and recalculate the due date from the creation day (CMS-13)."""
+    if priority == change_request.priority and change_request.due_date is not None:
+        return
+    change_request.priority = priority
+    created = change_request.created_at.date() if change_request.created_at else date.today()
+    change_request.due_date = due_date_for(priority, created)
+
+
 def create(data: dict, user) -> ChangeRequest:
     """Validate, persist and return a newly submitted change request."""
     values = validate(data)
