@@ -53,6 +53,9 @@ class Priority:
 
     ALL = [CRITICAL, HIGH, MEDIUM, LOW]
 
+    # Days allowed to finish a change request, by priority (CMS-13).
+    DUE_IN_DAYS = {CRITICAL: 1, HIGH: 3, MEDIUM: 7, LOW: 14}
+
 
 class CRType:
     BUG_FIX = "Bug fix"
