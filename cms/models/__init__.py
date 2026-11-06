@@ -2,6 +2,7 @@
 
 from cms.models.assignment_history import AssignmentHistory
 from cms.models.change_request import ChangeRequest, format_cr_number
+from cms.models.edit_history import EditHistory
 from cms.models.status_history import StatusHistory
 from cms.models.user import User
 
@@ -10,5 +11,6 @@ __all__ = [
     "ChangeRequest",
     "StatusHistory",
     "AssignmentHistory",
+    "EditHistory",
     "format_cr_number",
 ]

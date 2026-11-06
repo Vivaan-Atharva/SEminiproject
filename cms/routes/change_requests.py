@@ -1,4 +1,4 @@
-"""Create change request pages (CMS-3)."""
+"""Change request pages: create (CMS-3), list/detail (CMS-4), edit (CMS-11)."""
 
 from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
@@ -6,7 +6,14 @@ from werkzeug.routing import BuildError
 
 from cms.constants import COMPONENTS, CRType, Priority, Status
 from cms.models import ChangeRequest
-from cms.services.change_request_service import ValidationError, create, get_by_id_or_404, search
+from cms.services.change_request_service import (
+    ValidationError,
+    can_edit,
+    create,
+    get_by_id_or_404,
+    search,
+    update,
+)
 
 bp = Blueprint("change_requests", __name__, url_prefix="/change-requests")
 
@@ -76,4 +83,35 @@ def list():
 @login_required
 def detail(cr_id):
     change_request = get_by_id_or_404(cr_id, current_user)
-    return render_template("change_requests/detail.html", cr=change_request)
+    return render_template(
+        "change_requests/detail.html", cr=change_request, can_edit=can_edit(change_request, current_user)
+    )
+
+
+EDIT_FIELDS = ("title", "description", "cr_type", "priority", "component")
+
+
+@bp.route("/<int:cr_id>/edit", methods=["GET", "POST"])
+@login_required
+def edit(cr_id):
+    change_request = get_by_id_or_404(cr_id, current_user)
+    if not can_edit(change_request, current_user):
+        abort(403)
+
+    form = dict(
+        heading=f"Edit {change_request.cr_number}",
+        submit_label="Save changes",
+        cancel_url=url_for("change_requests.detail", cr_id=change_request.id),
+    )
+    if request.method == "GET":
+        data = {field: getattr(change_request, field) for field in EDIT_FIELDS}
+        return _new_form(data=data, **form)
+
+    data = request.form.to_dict()
+    try:
+        update(change_request, data, current_user)
+    except ValidationError as error:
+        return _new_form(data=data, errors=error.errors, **form), 400
+
+    flash(f"{change_request.cr_number} was updated.", "success")
+    return redirect(url_for("change_requests.detail", cr_id=change_request.id))
