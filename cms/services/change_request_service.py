@@ -7,7 +7,7 @@ from sqlalchemy import case, func, or_
 
 from cms.constants import COMPONENTS, CRType, Priority, Role, Status
 from cms.extensions import db
-from cms.models import ChangeRequest, format_cr_number
+from cms.models import ChangeRequest, EditHistory, format_cr_number
 from cms.services import workflow_service
 from cms.services.dashboard_service import visible_change_requests
 
@@ -142,8 +142,8 @@ def get_by_id_or_404(cr_id: int, user=None) -> ChangeRequest:
 
 
 def can_edit(change_request: ChangeRequest, user) -> bool:
-    """Only the requester or a reviewer (or admin) may edit, and never once Closed (CMS-11)."""
-    if change_request.status == Status.CLOSED:
+    """Only the requester or a reviewer (or admin) may edit, never once Closed or Rejected (CMS-11)."""
+    if change_request.status in Status.TERMINAL:
         return False
     if user.is_admin or user.role == Role.REVIEWER:
         return True
@@ -155,8 +155,16 @@ def update(change_request: ChangeRequest, data: dict, user) -> ChangeRequest:
     if not can_edit(change_request, user):
         abort(403)
     values = validate(data)
-    set_priority(change_request, values.pop("priority"))
     for field, value in values.items():
-        setattr(change_request, field, value)
+        old = getattr(change_request, field)
+        if old == value:
+            continue
+        db.session.add(
+            EditHistory(change_request=change_request, field=field, old_value=old, new_value=value, user=user)
+        )
+        if field == "priority":
+            set_priority(change_request, value)
+        else:
+            setattr(change_request, field, value)
     db.session.commit()
     return change_request
