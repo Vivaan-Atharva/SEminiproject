@@ -447,3 +447,81 @@ def test_data_survives_an_application_restart(tmp_path):
         assert ChangeRequest.query.count() == 11
         db.session.remove()
         db.engine.dispose()
+
+
+# ---------- Sprint 2 features inside the lifecycle (CMS-11, CMS-13) ----------
+
+def test_due_date_follows_priority_and_edits_through_the_lifecycle(flow):
+    """CMS-F-006 / CMS-F-014: due date from priority, recalculated on edit, edits locked once closed."""
+    from datetime import date, timedelta
+
+    from cms.models import EditHistory
+
+    cr_id = flow.create(priority=Priority.HIGH)
+    cr = fresh(cr_id)
+    created = cr.created_at.date()
+    assert cr.due_date == created + timedelta(days=3)
+
+    # Reviewer raises the priority through the edit page; the due date moves with it.
+    flow.sign_in(REVIEWER)
+    response = flow.client.post(
+        f"/change-requests/{cr_id}/edit", data={**NEW_CR, "priority": Priority.CRITICAL}
+    )
+    assert response.status_code == 302
+    cr = fresh(cr_id)
+    assert cr.priority == Priority.CRITICAL
+    assert cr.due_date == created + timedelta(days=1)
+    edits = EditHistory.query.filter_by(change_request_id=cr_id).all()
+    assert [(e.field, e.old_value, e.new_value) for e in edits] == [
+        ("priority", Priority.HIGH, Priority.CRITICAL)
+    ]
+    assert edits[0].user_id == user(REVIEWER).id
+
+    # Another requester cannot edit it.
+    assert flow.get(OTHER_REQUESTER, f"/change-requests/{cr_id}/edit").status_code == 403
+
+    # Pretend the deadline has passed: it shows up as overdue until it is resolved.
+    cr.due_date = date.today() - timedelta(days=1)
+    db.session.commit()
+    admin = user(ADMIN)
+    assert cr_id in [c.id for c in dashboard_service.overdue(admin)]
+    flow.sign_in(ADMIN)
+    listing = flow.client.get("/change-requests?overdue=1").get_data(as_text=True)
+    assert NEW_CR["title"] in listing
+    assert 'data-test="overdue-badge"' in flow.client.get(f"/change-requests/{cr_id}").get_data(as_text=True)
+
+    flow.do(REVIEWER, cr_id, "start-review")
+    flow.do(REVIEWER, cr_id, "approve")
+    flow.assign(REVIEWER, cr_id, ENGINEER)
+    flow.do(ENGINEER, cr_id, "start-work")
+    flow.do(ENGINEER, cr_id, "resolve", resolution_summary="Done.")
+    assert fresh(cr_id).is_overdue is False
+    assert cr_id not in [c.id for c in dashboard_service.overdue(admin)]
+
+    # Once closed, nobody can edit it.
+    flow.do(REQUESTER, cr_id, "close")
+    for email in [REQUESTER, REVIEWER, ADMIN]:
+        assert flow.get(email, f"/change-requests/{cr_id}/edit").status_code == 403
+
+
+def test_every_workflow_button_appears_only_for_the_right_person(flow):
+    """The detail page offers each action only to whoever may take it (CMS-6, 8, 9)."""
+
+    def buttons(email, cr_id):
+        page = flow.get(email, f"/change-requests/{cr_id}").get_data(as_text=True)
+        return {a for a in ACTIONS if f"/change-requests/{cr_id}/{a}\"" in page}
+
+    cr_id = flow.create()
+    assert buttons(REVIEWER, cr_id) == {"start-review"}
+    assert buttons(REQUESTER, cr_id) == set()
+    flow.do(REVIEWER, cr_id, "start-review")
+    assert buttons(REVIEWER, cr_id) == {"approve", "reject"}
+    flow.do(REVIEWER, cr_id, "approve")
+    flow.assign(REVIEWER, cr_id, ENGINEER)
+    assert buttons(ENGINEER, cr_id) == {"start-work"}
+    assert buttons(OTHER_ENGINEER, cr_id) == set()
+    flow.do(ENGINEER, cr_id, "start-work")
+    assert buttons(ENGINEER, cr_id) == {"resolve"}
+    flow.do(ENGINEER, cr_id, "resolve", resolution_summary="Done.")
+    assert buttons(REQUESTER, cr_id) == {"close", "reopen"}
+    assert buttons(ENGINEER, cr_id) == set()
