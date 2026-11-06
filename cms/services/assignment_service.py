@@ -15,7 +15,7 @@ Typical use::
 from cms.constants import Role, Status
 from cms.extensions import db
 from cms.models import AssignmentHistory, User
-from cms.services import workflow_service
+from cms.services import notification_service, workflow_service
 
 # Statuses in which a change request can be assigned or reassigned.
 ASSIGNABLE_STATUSES = [Status.APPROVED, Status.ASSIGNED, Status.IN_PROGRESS]
@@ -80,9 +80,11 @@ def assign(cr, engineer, by_user) -> AssignmentHistory:
         assigned_by_id=by_user.id,
     )
     previous_status = cr.status
+    previous_engineer = cr.assignee
     try:
         cr.assignee = engineer
         db.session.add(entry)
+        notification_service.assigned(cr, engineer, by_user, previous_engineer)
         if previous_status == Status.ASSIGNED:
             # Same status, new person: not a status transition, so commit here.
             db.session.commit()

@@ -25,6 +25,13 @@
             <a class="nav-link {% if request.endpoint in ['change_requests.list', 'change_requests.detail'] %}active{% endif %}"
                href="{{ url_for('change_requests.list') }}">Change requests</a>
           </li>
+          <li class="nav-item">
+            {% set unread = unread_notifications() %}
+            <a class="nav-link {% if request.endpoint == 'notifications.index' %}active{% endif %}"
+               href="{{ url_for('notifications.index') }}">
+              Notifications{% if unread %} <span class="badge rounded-pill bg-warning text-dark" data-test="notification-count">{{ unread }}<span class="visually-hidden"> unread</span></span>{% endif %}
+            </a>
+          </li>
           {% block nav_extra %}{% endblock %}
         </ul>
       {% else %}
