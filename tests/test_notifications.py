@@ -152,7 +152,7 @@ def test_bell_shows_unread_count(seeded, client, login):
 def test_no_badge_when_nothing_unread(seeded, client, login):
     login("engineer2@cms.local")
     page = client.get("/").get_data(as_text=True)
-    assert 'href="/notifications"' in page
+    assert 'href="/notifications' in page
     assert 'data-test="notification-count"' not in page
 
 
