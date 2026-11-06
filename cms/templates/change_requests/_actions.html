@@ -89,3 +89,29 @@
     </div>
   </div>
 {% endif %}
+
+{# CMS-9: close / reopen a resolved change request (requester or reviewer; the status engine decides who may) #}
+{% set closure_steps = allowed_next(cr, current_user) %}
+{% if Status.CLOSED in closure_steps or Status.REOPENED in closure_steps %}
+  <div class="card mt-4">
+    <div class="card-body">
+      <h2 class="h5">Is the fix right?</h2>
+      {% if Status.CLOSED in closure_steps %}
+        <form method="post" action="{{ url_for('workflow.close', cr_id=cr.id) }}" class="mb-4">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-success">Close change request</button>
+        </form>
+      {% endif %}
+      {% if Status.REOPENED in closure_steps %}
+        <form method="post" action="{{ url_for('workflow.reopen', cr_id=cr.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="mb-3">
+            <label for="reopen_reason" class="form-label">Reason for reopening</label>
+            <textarea id="reopen_reason" name="reason" class="form-control" rows="3" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-outline-danger">Reopen</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+{% endif %}
