@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 from cms.constants import Status
 from cms.extensions import db
@@ -53,6 +53,15 @@ class ChangeRequest(db.Model):
     @property
     def is_open(self) -> bool:
         return self.status not in Status.TERMINAL
+
+    def is_overdue_on(self, today: date | None = None) -> bool:
+        """Past its due date and not yet Resolved, Closed or Rejected (CMS-13)."""
+        today = today or date.today()
+        return self.due_date is not None and self.due_date < today and self.status not in Status.NOT_DUE
+
+    @property
+    def is_overdue(self) -> bool:
+        return self.is_overdue_on()
 
     def __repr__(self) -> str:
         return f"<ChangeRequest {self.cr_number} {self.status}>"
