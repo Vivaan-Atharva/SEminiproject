@@ -1,4 +1,6 @@
-"""Business rules for creating change requests (CMS-3)."""
+"""Business rules for creating, finding and editing change requests (CMS-3, CMS-4, CMS-11, CMS-13)."""
+
+from datetime import date, timedelta
 
 from flask import abort
 from sqlalchemy import case, func, or_
@@ -51,6 +53,12 @@ def validate(data: dict) -> dict[str, str]:
     return cleaned
 
 
+def due_date_for(priority: str, start: date | None = None) -> date:
+    """Return the due date for a change request of *priority* started on *start* (CMS-13)."""
+    start = start or date.today()
+    return start + timedelta(days=Priority.DUE_IN_DAYS[priority])
+
+
 def create(data: dict, user) -> ChangeRequest:
     """Validate, persist and return a newly submitted change request."""
     values = validate(data)
@@ -59,6 +67,7 @@ def create(data: dict, user) -> ChangeRequest:
         cr_number=format_cr_number(highest_id + 1),
         status=Status.SUBMITTED,
         requester=user,
+        due_date=due_date_for(values["priority"]),
         **values,
     )
     db.session.add(change_request)
