@@ -139,3 +139,24 @@ def get_by_id_or_404(cr_id: int, user=None) -> ChangeRequest:
     if user is not None and user.role == Role.REQUESTER and change_request.requester_id != user.id:
         abort(403)
     return change_request
+
+
+def can_edit(change_request: ChangeRequest, user) -> bool:
+    """Only the requester or a reviewer (or admin) may edit, and never once Closed (CMS-11)."""
+    if change_request.status == Status.CLOSED:
+        return False
+    if user.is_admin or user.role == Role.REVIEWER:
+        return True
+    return change_request.requester_id == user.id
+
+
+def update(change_request: ChangeRequest, data: dict, user) -> ChangeRequest:
+    """Validate with the create rules and save the edited fields (CMS-11)."""
+    if not can_edit(change_request, user):
+        abort(403)
+    values = validate(data)
+    set_priority(change_request, values.pop("priority"))
+    for field, value in values.items():
+        setattr(change_request, field, value)
+    db.session.commit()
+    return change_request
