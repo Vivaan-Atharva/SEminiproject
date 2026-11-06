@@ -95,6 +95,8 @@ def search(
     assignee_id=None,
     requester_id=None,
     component=None,
+    overdue=False,
+    today=None,
     sort="newest",
 ):
     """Return change requests visible to *user*, with optional filters."""
@@ -112,6 +114,12 @@ def search(
         query = query.filter(ChangeRequest.assignee_id == assignee_id)
     if requester_id is not None:
         query = query.filter(ChangeRequest.requester_id == requester_id)
+    if overdue:
+        query = query.filter(
+            ChangeRequest.due_date.is_not(None),
+            ChangeRequest.due_date < (today or date.today()),
+            ChangeRequest.status.not_in(Status.NOT_DUE),
+        )
 
     if sort == "oldest":
         return query.order_by(ChangeRequest.created_at, ChangeRequest.id).all()
