@@ -25,6 +25,7 @@ from datetime import datetime, timezone
 from cms.constants import Role, Status
 from cms.extensions import db
 from cms.models import StatusHistory
+from cms.services import notification_service
 
 # --- errors ---------------------------------------------------------------
 
@@ -192,6 +193,7 @@ def transition(cr, to_status, user, *, reason=None, resolution_summary=None) -> 
             user_id=user.id,
         )
         db.session.add(entry)
+        notification_service.status_changed(cr, from_status, to_status, user, reason_text or None)
         db.session.commit()
     except Exception:
         db.session.rollback()
@@ -212,4 +214,5 @@ def record_initial_status(cr, user) -> StatusHistory:
         user_id=user.id,
     )
     db.session.add(entry)
+    notification_service.submitted(cr, user)
     return entry

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications · CMS{% endblock %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">Notifications</h1>
+    {% if unread_notifications() %}
+      <form method="post" action="{{ url_for('notifications.read_all') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-outline-secondary btn-sm" type="submit" data-test="read-all">Mark all as read</button>
+      </form>
+    {% endif %}
+  </div>
+
+  {% if notifications %}
+    <div class="list-group" data-test="notifications">
+      {% for note in notifications %}
+        <form method="post" action="{{ url_for('notifications.open', notification_id=note.id) }}" class="m-0">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit"
+                  class="list-group-item list-group-item-action d-flex justify-content-between align-items-start gap-3 {% if not note.read %}fw-semibold{% endif %}"
+                  data-test="{{ 'notification-unread' if not note.read else 'notification-read' }}">
+            <span>
+              <span class="badge bg-secondary me-2">{{ note.kind }}</span>{{ note.message }}
+              {% if not note.read %}<span class="badge bg-primary ms-2">New</span>{% endif %}
+            </span>
+            <small class="text-muted text-nowrap fw-normal">{{ note.created_at.strftime('%d %b %H:%M') }}</small>
+          </button>
+        </form>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-muted" data-test="notifications-empty">No notifications yet. You will be told here when a change request you raised or are working on is assigned, changes status or gets a comment.</p>
+  {% endif %}
+{% endblock %}

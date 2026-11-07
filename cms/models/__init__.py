@@ -3,6 +3,7 @@
 from cms.models.assignment_history import AssignmentHistory
 from cms.models.change_request import ChangeRequest, format_cr_number
 from cms.models.edit_history import EditHistory
+from cms.models.notification import Notification
 from cms.models.status_history import StatusHistory
 from cms.models.user import User
 
@@ -12,5 +13,6 @@ __all__ = [
     "StatusHistory",
     "AssignmentHistory",
     "EditHistory",
+    "Notification",
     "format_cr_number",
 ]
