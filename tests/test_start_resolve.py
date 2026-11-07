@@ -298,5 +298,5 @@ def test_history_list_is_shown_for_a_change_request_without_changes(seeded, clie
 
     page = client.get(DETAIL.format(get_cr("CR-0001").id)).data
 
-    assert b"Status history" in page
-    assert b"No status changes recorded yet." in page
+    assert b"Activity timeline" in page
+    assert b"No activity recorded yet." in page

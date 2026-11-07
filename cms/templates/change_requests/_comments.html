@@ -1,0 +1,20 @@
+{# CMS-10: add a comment (engineers, reviewers and admins can also mark it as a work note) #}
+<div class="card mt-4">
+  <div class="card-body">
+    <h2 class="h5">Add a comment</h2>
+    <form method="post" action="{{ url_for('comments.add', cr_id=cr.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="mb-3">
+        <label for="comment_body" class="form-label">Comment</label>
+        <textarea id="comment_body" name="body" class="form-control" rows="3" maxlength="{{ COMMENT_MAX_LENGTH }}" required></textarea>
+      </div>
+      {% if can_write_work_note(current_user) %}
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="is_work_note" name="is_work_note">
+          <label class="form-check-label" for="is_work_note">Work note</label>
+        </div>
+      {% endif %}
+      <button type="submit" class="btn btn-primary">Add comment</button>
+    </form>
+  </div>
+</div>
