@@ -5,7 +5,7 @@ test cases (section 13) and the automated tests that check it.
 
 **Status key**
 - **Pass**: implemented, and the automated tests pass in GitHub Actions on Ubuntu, Windows and macOS
-  (354 tests, 0 failures at the feature freeze).
+  (401 tests, 0 failures at the feature freeze).
 - **Partial**: part of the requirement is implemented and tested; the rest is listed as a deviation.
 - **Not implemented / Not measured**: recorded as a deviation in SRS section 10.
 
@@ -24,12 +24,12 @@ test cases (section 13) and the automated tests that check it.
 | CMS-F-007 | Enforce the workflow | CMS-5 | TC-WF-01, TC-WF-02 | `test_workflow.py`: `test_every_pair_of_statuses_outside_the_table_is_rejected`, `test_a_change_request_can_go_from_submitted_to_closed_with_a_full_history`. `test_integration.py`: `test_full_lifecycle_from_submission_to_closure`, `test_steps_cannot_be_skipped` | Pass |
 | CMS-F-008 | Approve / reject with reason | CMS-6 | TC-WF-03 | `test_workflow.py`: `test_missing_input_is_refused_and_nothing_changes`. `test_integration.py`: `test_rejected_request_stops_and_cannot_be_assigned` | Pass |
 | CMS-F-009 | Assign / reassign to active engineer | CMS-7 | TC-ASSIGN-01, TC-ASSIGN-02 | `test_assignment.py` (all). `test_integration.py`: `test_reassign_moves_work_to_the_new_engineer` | Pass |
-| CMS-F-010 | Start work; work notes and comments | CMS-8, CMS-10 | — | start work: `test_start_resolve.py`, `test_integration.py`. Comments: not built | Partial: start work only; comments and work notes (CMS-10) not built |
+| CMS-F-010 | Start work; work notes and comments | CMS-8, CMS-10 | TC-COMMENT-01 | start work: `test_start_resolve.py`, `test_integration.py`. Comments and work notes: `test_comments.py` (all) | Pass |
 | CMS-F-011 | Resolve with summary | CMS-8 | TC-RES-01 | `test_workflow.py`: `test_resolving_saves_the_trimmed_summary_on_the_change_request`. `test_integration.py`: `test_only_the_right_people_can_move_a_request` | Pass |
 | CMS-F-012 | Close, or reopen with reason | CMS-9 | TC-CLOSE-01, TC-REOPEN-01 | `test_workflow.py`: `test_closing_sets_closed_at_and_other_moves_do_not`. `test_integration.py`: `test_reopen_then_resolve_and_close_again`, `test_reviewer_can_also_close_a_resolved_request` | Pass |
-| CMS-F-013 | History of status and assignment changes | CMS-5, CMS-7, CMS-11 | TC-HIST-01 | `test_integration.py`: `test_full_lifecycle_with_reassignment_has_complete_history`. `test_assignment.py`: `test_assign_approved_cr_sets_assignee_status_and_history` | Pass |
+| CMS-F-013 | History of status and assignment changes | CMS-5, CMS-7, CMS-10, CMS-11 | TC-HIST-01 | `test_integration.py`: `test_full_lifecycle_with_reassignment_has_complete_history`. `test_assignment.py`: `test_assign_approved_cr_sets_assignee_status_and_history` | Pass |
 | CMS-F-014 | Due dates from priority; overdue flag | CMS-13, CMS-12 | TC-SLA-01, TC-SLA-02 | `test_due_dates.py` (all). `test_dashboard.py`: `test_overdue_boundaries`. `test_integration.py`: `test_due_date_follows_priority_and_edits_through_the_lifecycle` | Pass |
-| CMS-F-015 | In-app notifications | CMS-14 | TC-ASSIGN-01, TC-REOPEN-01 (notified) | `test_notifications.py` (all) | Pass (comment trigger `comment_added()` ready for CMS-10) |
+| CMS-F-015 | In-app notifications | CMS-14 | TC-ASSIGN-01, TC-REOPEN-01 (notified) | `test_notifications.py` (all), `test_comments.py`: comment notifications | Pass |
 | CMS-F-016 | Dashboard counts, my work, overdue | CMS-12 | TC-REP-01 | `test_dashboard.py` (all). `test_integration.py`: `test_dashboard_numbers_follow_the_lifecycle` | Pass |
 | CMS-F-017 | Open-CR snapshot reports | — | TC-REP-01 | — | Not implemented (the dashboard covers counts by status and priority) |
 | CMS-F-018 | Ageing / resolution-time reports | — | TC-REP-02 | — | Not implemented |
