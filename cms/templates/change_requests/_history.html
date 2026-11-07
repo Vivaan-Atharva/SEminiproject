@@ -1,28 +1,47 @@
-{# CMS-5/8: status history, oldest first. CMS-10 will add comments to this timeline. #}
+{# CMS-5/8/10: activity timeline - status changes, assignments, comments and work notes, oldest first. #}
 <div class="card mt-4">
   <div class="card-body">
-    <h2 class="h5">Status history</h2>
-    {% if cr.status_history %}
+    <h2 class="h5">Activity timeline</h2>
+    {% set items = timeline(cr) %}
+    {% if items %}
       <ul class="list-group list-group-flush">
-        {% for entry in cr.status_history %}
-          <li class="list-group-item px-0 history-entry">
-            <div class="d-flex justify-content-between">
-              {% if entry.from_status %}
-                <span>{{ entry.from_status }} &rarr; <strong>{{ entry.to_status }}</strong></span>
-              {% else %}
-                <span>Created as <strong>{{ entry.to_status }}</strong></span>
+        {% for item in items %}
+          {% if item.kind == 'status' %}
+            <li class="list-group-item px-0 history-entry">
+              <div class="d-flex justify-content-between">
+                {% if item.from_status %}
+                  <span>{{ item.from_status }} &rarr; <strong>{{ item.to_status }}</strong></span>
+                {% else %}
+                  <span>Created as <strong>{{ item.to_status }}</strong></span>
+                {% endif %}
+                <small class="text-muted">{{ item.when.strftime('%d %b %Y %H:%M') }}</small>
+              </div>
+              <small class="text-muted">by {{ item.who }}</small>
+              {% if item.reason %}
+                <div class="mt-1" style="white-space: pre-wrap">Reason: {{ item.reason }}</div>
               {% endif %}
-              <small class="text-muted">{{ entry.created_at.strftime('%d %b %Y %H:%M') }}</small>
-            </div>
-            <small class="text-muted">by {{ entry.user.name }}</small>
-            {% if entry.reason %}
-              <div class="mt-1" style="white-space: pre-wrap">Reason: {{ entry.reason }}</div>
-            {% endif %}
-          </li>
+            </li>
+          {% else %}
+            <li class="list-group-item px-0 timeline-entry" data-kind="{{ item.kind }}">
+              <div class="d-flex justify-content-between">
+                <span>
+                  {% if item.kind == 'comment' %}<span class="badge bg-secondary">Comment</span>
+                  {% elif item.kind == 'work note' %}<span class="badge bg-warning text-dark">Work note</span>
+                  {% else %}<span class="badge bg-info text-dark">Assignment</span>{% endif %}
+                  {% if item.kind == 'assignment' %}{{ item.text }}{% endif %}
+                </span>
+                <small class="text-muted">{{ item.when.strftime('%d %b %Y %H:%M') }}</small>
+              </div>
+              <small class="text-muted">by {{ item.who }}</small>
+              {% if item.kind != 'assignment' %}
+                <div class="mt-1" style="white-space: pre-wrap">{{ item.text }}</div>
+              {% endif %}
+            </li>
+          {% endif %}
         {% endfor %}
       </ul>
     {% else %}
-      <p class="text-muted mb-0">No status changes recorded yet.</p>
+      <p class="text-muted mb-0">No activity recorded yet.</p>
     {% endif %}
   </div>
 </div>

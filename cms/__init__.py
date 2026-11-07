@@ -29,6 +29,7 @@ def create_app(config_object=Config):
     from cms.routes.assignment import bp as assignment_bp
     from cms.routes.auth import bp as auth_bp
     from cms.routes.change_requests import bp as change_requests_bp
+    from cms.routes.comments import bp as comments_bp
     from cms.routes.main import bp as main_bp
     from cms.routes.notifications import bp as notifications_bp
     from cms.routes.workflow import bp as workflow_bp
@@ -39,6 +40,7 @@ def create_app(config_object=Config):
     app.register_blueprint(assignment_bp)
     app.register_blueprint(workflow_bp)
     app.register_blueprint(notifications_bp)
+    app.register_blueprint(comments_bp)
 
     from cms.cli import register_cli
 
