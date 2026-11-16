@@ -7,7 +7,7 @@ Jira space: **Change Management Software** (key `CMS`), team-managed Scrum, on `
 
 | What | File |
 |---|---|
-| Jira dashboard / board | ![Jira board](01-board.png) |
+| Jira dashboard (Reports overview: status, type, assignee, trend, cycle time) | ![Jira dashboard](01-board.png) |
 | Product backlog (all 15 items with points, sprint and owner) | ![Product backlog](02-product-backlog.png) |
 | Sprint 1 backlog | ![Sprint 1 backlog](03-sprint1-backlog.png) |
 | Sprint 2 backlog | ![Sprint 2 backlog](04-sprint2-backlog.png) |
