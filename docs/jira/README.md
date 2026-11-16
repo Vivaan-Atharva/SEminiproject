@@ -22,6 +22,8 @@ Jira space: **Change Management Software** (key `CMS`), team-managed Scrum, on `
 | CMS Sprint 1 | 31 Oct – 1 Nov 2026 | Working foundation: project skeleton with CI, login with roles, create/list/view change requests, status-flow engine with history, and assign an engineer. | 6 | 24 | All Done |
 | CMS Sprint 2 | 2 – 7 Nov 2026 (feature freeze 7 Nov) | Complete the change-request lifecycle (approve/reject, resolve, close, reopen), comments, editing, dashboard, overdue flags and notifications; integration tests and final documents. | 9 | 26 | All Done |
 
+Points above are the items' final estimates. Jira's velocity report counts the work in each sprint when it started: Sprint 1 committed 16 and completed 13 within the sprint dates; Sprint 2 committed 23 and completed 23.
+
 ## Product backlog
 
 | Key | Type | Summary | Points | Sprint | Owner | Status | Pull request |
